@@ -18,21 +18,24 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject checkObject;
     public Bounds bounds;
     public GameObject originModel;
-    public Text deltaDiff;
-    public Text pinch;
-    public Text pos;
+    public Text scaleX;
+    public Text scaleY;
+    public Text scaleZ;
     
     private GameObject spawnObject;
     private bool buttonClick = true;
     private Rigidbody myRigid;
     private Vector3 rotation;
     private Vector3 position;
+    
     private float sliderValue ;
     private int mode = 1; // 1->이동, 2->회전, 3->배치
+    private bool getRealSize = true;
     
-
+    private float scaleRate = -0.15f;
     private float rotationRate = 0.15f;
     private float rotateY;
+    private float originScale;
     
     public ARPlaneManager arPlaneManager;
     
@@ -48,27 +51,33 @@ public class ARPlaceOnPlane : MonoBehaviour
         tx.text = mode.ToString();
         if (mode == 1) // 이동
         {
+            tx.text = "가구 이동";
             UpdateCenterObject();
-            //resizeObjectByTouch(); // 손가락 두개로 사이징
         }
         else if (mode == 2) // 회전
         {
-            PlaceObjectRotate();
-            mode = 4;
+            tx.text = "가구 회전";
+            rotateObject();
+            // mode = 4;
         }
         else if (mode == 3) // 배치
         {
+            tx.text = "가구 배치";
             Vector3 newPosition = placeObject.transform.position - new Vector3(0, 0.4f, 0);
             Vector3 currentRotation = rotation + new Vector3(0, 0.03f, 0) * sliderValue;
             placeObject.transform.SetPositionAndRotation(newPosition, Quaternion.Euler(currentRotation));
             mode = 4;
         }
-        else if (mode == 4) // 사이징 모드
+        else if (mode == 4) // 가구 이동
         {
+            tx.text = "가구 이동";
             placeObjectByTouch();
-            resizeObjectByTouch(); // 손가락 2개로 사이징
-            // 리사이징
-            // 회전
+            resizeObjectByTouch();
+        }
+        else if (mode == 5) // 리사이징 모드
+        {
+            tx.text = "사이즈 변경";
+            //resizeObjectByTouch();
         }
     }
     private void placeObjectByTouch()
@@ -86,6 +95,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             }
         }
     }
+    
     private void rotateObject()
     {
         if (Input.touchCount >= 2)
@@ -96,18 +106,22 @@ public class ARPlaceOnPlane : MonoBehaviour
             if (touchZero.phase == TouchPhase.Moved && touchOne.phase == TouchPhase.Moved)
             {
                 rotateY = (touchOne.deltaPosition.x + touchZero.deltaPosition.x) / 2;
-
                 placeObject.transform.Rotate(0,
                     -rotateY * rotationRate, 0, Space.World);
             }
         }
     }
+    
     private void resizeObjectByTouch()
     {
-        if (Input.touchCount == 2)
+        if (Input.touchCount >= 2)
         {
-            float originScale = GameObject.FindWithTag("OriginModel").transform.localScale.x;
-            // 실제 저장해놨던 scale 가졍괴
+            if (getRealSize)
+            {
+                originScale = GameObject.FindWithTag("OriginModel").transform.localScale.x;
+                getRealSize = false;
+            }
+            // 실제 저장해놨던 scale 가져오기
             
             // Get Touch points.
             Touch touchZero = Input.GetTouch(0);
@@ -128,21 +142,15 @@ public class ARPlaceOnPlane : MonoBehaviour
             Vector3 prevScale = placeObject.transform.localScale;
 
             // Calculate pinch amount with max, min.
-            float pinchAmount = Mathf.Clamp(prevScale.x + deltaMagnitudeDiff * Time.deltaTime*(-0.1f), originScale/2, originScale);
-            
-            //deltaDiff.text = deltaMagnitudeDiff.ToString();
-            //pinch.text = pinchAmount.ToString();
-            //pos.text = placeObject.transform.localScale.x.ToString();
-
-           
+            float pinchAmount = Mathf.Clamp(prevScale.x + deltaMagnitudeDiff * Time.deltaTime*(-originScale), originScale/2, originScale);
 
             // Set new scale. 
             Vector3 newScale = new Vector3(pinchAmount, pinchAmount, pinchAmount);
             placeObject.transform.localScale = Vector3.Lerp(prevScale, newScale, Time.deltaTime);
 
-            //deltaDiff.text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
-            //pinch.text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
-            //pos.text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
+            //scaleX.text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
+            //scaleY.text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
+            //scaleZ.text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
         }
     }
     
@@ -241,23 +249,30 @@ public class ARPlaceOnPlane : MonoBehaviour
             placeObject.SetActive(false);
         }
     }
-    
-    
-    public void buttonOnClickTo1()
+    public void buttonOnClickTo1() // 이동
     {
-        mode = 1; // 이동
+        mode = 1; 
     }
-    public void buttonOnClickTo2()
+    public void buttonOnClickTo2() // 회전
     {
-        mode = 2; // 회전
-        sliderValue = rotateSlider.value;
+        mode = 2;
         //rotation = rotation + new Vector3(0,1,0) * sliderValue;
     }
-    public void buttonOnClickTo3()
+    public void buttonOnClickTo3() // 배치
     {
-        mode = 3; // 배치
+        mode = 3;
         checkObject.SetActive(false);
         // myRigid = placeObject.GetComponent<Rigidbody>();
         // myRigid.useGravity = false;
+    }
+
+    public void buttonOnClickTo4() // 
+    {
+        mode = 4;
+    }
+
+    public void buttonOnClickTo5()
+    {
+        mode = 5;
     }
 }
