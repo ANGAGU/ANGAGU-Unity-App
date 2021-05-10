@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
@@ -20,36 +21,57 @@ public class ARPlaceeOnPlane : MonoBehaviour
     private Rigidbody myRigid;
     private Vector3 rotation;
     private Vector3 position;
-    private float sliderValue = 0;
+    private float sliderValue ;
     private int mode = 1; // 1->이동, 2->회전, 3->배치
+    
+    public ARPlaneManager arPlaneManager;
 
     // Update is called once per frame
     private void Start()
     {
+        sliderValue = 0;
+        arPlaneManager.planesChanged += OnPlaneChanged;
         rotation = new Vector3(0, 1, 0);
     }
 
     void Update()
     {
+        tx.text = mode.ToString();
         if (mode == 1) // 이동
         {
             UpdateCenterObject();
         }
         else if (mode == 2) // 회전
         {
-            PlaceObjectRotate();
+            //PlaceObjectRotate();
         }
         else if (mode == 3) // 배치
         {
-            position = placeObject.transform.position;
+            position = placeObject.transform.position - new Vector3(0, 0.4f, 0);
+            Vector3 currentRotation = rotation + new Vector3(0, 1, 0) * sliderValue;
+            placeObject.transform.SetPositionAndRotation(position, Quaternion.Euler(currentRotation));
+            mode = 4;
         }
-        //PlaceObjectByTouch();
+        else if (mode == 4)
+        {
+
+        }
     }
 
     private void PlaceObjectRotate()
     {
         placeObject.transform.Rotate(rotation + new Vector3(0,1,0) * sliderValue);
     }
+    void OnPlaneChanged(ARPlanesChangedEventArgs args)
+    {
+        if(args.updated != null && args.updated.Count>0){
+            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.1f))
+            {
+                plane.gameObject.SetActive(true);
+            }
+        }
+    }
+
     private void PlaceObjectByTouch() {
         /*if (Input.touchCount > 0)
         {
@@ -110,13 +132,12 @@ public class ARPlaceeOnPlane : MonoBehaviour
     {
         Vector3 screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
         List<ARRaycastHit> hits = new List<ARRaycastHit>();
-        arRaycaster.Raycast(screenCenter, hits,TrackableType.Planes);
+        arRaycaster.Raycast(screenCenter, hits,TrackableType.PlaneWithinPolygon);
 
         if (hits.Count > 0) // 인식되는 평면이 있는 경우
         {
             Pose placementPose = hits[0].pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
-            //spawnObject = Instantiate(placeObject, upPosition, Quaternion.Euler(rotation);
             placeObject.SetActive(true);
             Vector3 currentRotation = rotation + new Vector3(0, 1, 0) * sliderValue;
             placeObject.transform.SetPositionAndRotation(position, Quaternion.Euler(currentRotation));
@@ -132,7 +153,7 @@ public class ARPlaceeOnPlane : MonoBehaviour
     {
         mode = 3; // 배치
         myRigid = placeObject.GetComponent<Rigidbody>();
-        myRigid.useGravity = true;
+        myRigid.useGravity = false;
     }
     public void buttonOnInit()
     {
@@ -143,7 +164,6 @@ public class ARPlaceeOnPlane : MonoBehaviour
         mode = 2; // 회전
         sliderValue = rotateSlider.value;
         rotation = rotation + new Vector3(0,1,0) * sliderValue;
-        //transform.Rotate(transform.rotation * rotateSlider.value);
     }
     
 }
