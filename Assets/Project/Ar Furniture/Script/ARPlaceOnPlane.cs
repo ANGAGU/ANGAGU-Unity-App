@@ -18,6 +18,9 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject checkObject;
     public Bounds bounds;
     public GameObject originModel;
+    public Text deltaDiff;
+    public Text pinch;
+    public Text pos;
     
     private GameObject spawnObject;
     private bool buttonClick = true;
@@ -27,8 +30,9 @@ public class ARPlaceOnPlane : MonoBehaviour
     private float sliderValue ;
     private int mode = 1; // 1->이동, 2->회전, 3->배치
     
-    
 
+    private float rotationRate = 0.15f;
+    private float rotateY;
     
     public ARPlaneManager arPlaneManager;
     
@@ -36,15 +40,16 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         sliderValue = 0;
         arPlaneManager.planesChanged += OnPlaneChanged;
-        rotation = new Vector3(0, 1, 0);
+        rotation = new Vector3(0, 0, 0);
     }
 
-    void Update()
+    void Update() //
     {
         tx.text = mode.ToString();
         if (mode == 1) // 이동
         {
             UpdateCenterObject();
+            //resizeObjectByTouch(); // 손가락 두개로 사이징
         }
         else if (mode == 2) // 회전
         {
@@ -54,21 +59,100 @@ public class ARPlaceOnPlane : MonoBehaviour
         else if (mode == 3) // 배치
         {
             Vector3 newPosition = placeObject.transform.position - new Vector3(0, 0.4f, 0);
-            Vector3 currentRotation = rotation + new Vector3(0, 1, 0) * sliderValue;
+            Vector3 currentRotation = rotation + new Vector3(0, 0.03f, 0) * sliderValue;
             placeObject.transform.SetPositionAndRotation(newPosition, Quaternion.Euler(currentRotation));
             mode = 4;
         }
-        else if (mode == 4)
+        else if (mode == 4) // 사이징 모드
         {
+            placeObjectByTouch();
+            resizeObjectByTouch(); // 손가락 2개로 사이징
             // 리사이징
             // 회전
         }
     }
+    private void placeObjectByTouch()
+    {
+        if(Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+            List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
+            if(arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
+            {
+                Pose hitPose = hits[0].pose;
+                placeObject.SetActive(true);
+                placeObject.transform.SetPositionAndRotation(hitPose.position, hitPose.rotation);
+            }
+        }
+    }
+    private void rotateObject()
+    {
+        if (Input.touchCount >= 2)
+        {
+            Touch touchZero = Input.GetTouch(0);
+            Touch touchOne = Input.GetTouch(1);
+
+            if (touchZero.phase == TouchPhase.Moved && touchOne.phase == TouchPhase.Moved)
+            {
+                rotateY = (touchOne.deltaPosition.x + touchZero.deltaPosition.x) / 2;
+
+                placeObject.transform.Rotate(0,
+                    -rotateY * rotationRate, 0, Space.World);
+            }
+        }
+    }
+    private void resizeObjectByTouch()
+    {
+        if (Input.touchCount == 2)
+        {
+            float originScale = GameObject.FindWithTag("OriginModel").transform.localScale.x;
+            // 실제 저장해놨던 scale 가졍괴
+            
+            // Get Touch points.
+            Touch touchZero = Input.GetTouch(0);
+            Touch touchOne = Input.GetTouch(1);
+
+            // Find the position in the previous frame of each touch.
+            Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
+            Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
+
+            // Find the magnitude of the vector (the distance) between the touches in each frame.
+            float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
+            float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
+
+            // Find the difference in the distances between each frame.
+            float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
+
+            // Get prev object scale.
+            Vector3 prevScale = placeObject.transform.localScale;
+
+            // Calculate pinch amount with max, min.
+            float pinchAmount = Mathf.Clamp(prevScale.x + deltaMagnitudeDiff * Time.deltaTime*(-0.1f), originScale/2, originScale);
+            
+            //deltaDiff.text = deltaMagnitudeDiff.ToString();
+            //pinch.text = pinchAmount.ToString();
+            //pos.text = placeObject.transform.localScale.x.ToString();
+
+           
+
+            // Set new scale. 
+            Vector3 newScale = new Vector3(pinchAmount, pinchAmount, pinchAmount);
+            placeObject.transform.localScale = Vector3.Lerp(prevScale, newScale, Time.deltaTime);
+
+            //deltaDiff.text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
+            //pinch.text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
+            //pos.text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
+        }
+    }
+    
     private void PlaceObjectRotate()
     {
-        placeObject.transform.Rotate(rotation + new Vector3(0,1,0) * sliderValue);
+        //placeObject.transform.localEulerAngles; 
+        //placeObject.transform.Rotate(rotation + new Vector3(0,0.03f,0) * sliderValue);
+        ////
     }
+
     void OnPlaneChanged(ARPlanesChangedEventArgs args)
     {
         if(args.updated != null && args.updated.Count>0){
@@ -175,35 +259,5 @@ public class ARPlaceOnPlane : MonoBehaviour
         checkObject.SetActive(false);
         // myRigid = placeObject.GetComponent<Rigidbody>();
         // myRigid.useGravity = false;
-    }
-    
-    void OnDrawGizmosSelected()
-    {
-        Bounds totalBounds = new Bounds();
-        foreach (MeshRenderer meshRenderer in GetComponentsInChildren<MeshRenderer>())
-        {
-            totalBounds.Encapsulate(meshRenderer.bounds);
-        }
-        Color temp = Color.red;
-        temp.a = 0.3f;
-        Gizmos.color = temp;
-        Gizmos.DrawCube(totalBounds.center, totalBounds.size);
-    }
-    void resizing(Vector3 realSize)
-    {
-        Bounds totalBounds = new Bounds();
-        foreach (MeshRenderer meshRenderer in GetComponentsInChildren<MeshRenderer>())
-        {
-            totalBounds.Encapsulate(meshRenderer.bounds);
-        }
-        Debug.Log(totalBounds.size);
-
-        Vector3 boundSize = totalBounds.size;
-        // 일단 한쪽 비율만 보고 일정하게 줄이
-        float resizeRate =  realSize.x / boundSize.x;
-        transform.localScale = new Vector3(resizeRate, resizeRate, resizeRate);
-
-        originModel.transform.localScale = new Vector3(resizeRate, resizeRate, resizeRate);
-        // transform.localScale = new Vector3(1 / (boundSize.x*2), 1 / (boundSize.x * 2), 1 / (boundSize.x * 2));
     }
 }
