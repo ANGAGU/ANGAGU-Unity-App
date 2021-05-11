@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
@@ -14,14 +15,11 @@ public class ARPlaceOnPlane : MonoBehaviour
     public ARRaycastManager arRaycaster;
     public GameObject placeObject;
     public Text tx;
-    public Slider rotateSlider;
     public GameObject checkObject;
-    public Bounds bounds;
-    public GameObject originModel;
-    public Text scaleX;
-    public Text scaleY;
-    public Text scaleZ;
-    
+    public GameObject modelHeight;
+    public GameObject modelWidth;
+    public GameObject modelDepth;
+
     private GameObject spawnObject;
     private bool buttonClick = true;
     private Rigidbody myRigid;
@@ -44,40 +42,35 @@ public class ARPlaceOnPlane : MonoBehaviour
         sliderValue = 0;
         arPlaneManager.planesChanged += OnPlaneChanged;
         rotation = new Vector3(0, 0, 0);
+        modelHeight.SetActive(false);
+        modelWidth.SetActive(false);
+        modelDepth.SetActive(false);
     }
 
-    void Update() //
+    void Update()
     {
         tx.text = placeObject.transform.position.ToString();
         if (mode == 1) // 이동
         {
-            tx.text = "가구 이동";
             UpdateCenterObject();
         }
         else if (mode == 2) // 회전
         {
-            tx.text = "가구 회전";
             rotateObject();
-            // mode = 4;
         }
         else if (mode == 3) // 배치
         {
-            tx.text = "가구 배치";
-            Vector3 newPosition = placeObject.transform.position - new Vector3(0, 0.4f, 0);
-            Vector3 currentRotation = rotation + new Vector3(0, 0.03f, 0) * sliderValue;
-            placeObject.transform.SetPositionAndRotation(newPosition, Quaternion.Euler(currentRotation));
             mode = 4;
+            placeObject.transform.position = checkObject.transform.position;
+            checkObject.SetActive(false);
         }
         else if (mode == 4) // 가구 이동
         {
-            tx.text = "가구 이동";
             placeObjectByTouch();
-            // resizeObjectByTouch();
         }
         else if (mode == 5) // 리사이징 모드
         {
-            tx.text = "사이즈 변경";
-            // resizeObjectByTouch();
+            resizeObjectByTouch();
         }
     }
     private void placeObjectByTouch()
@@ -86,12 +79,12 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Touch touch = Input.GetTouch(0);
             List<ARRaycastHit> hits = new List<ARRaycastHit>();
-
+            if (touch.position.y < 120) return;
             if(arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
             {
                 Pose hitPose = hits[0].pose;
                 placeObject.SetActive(true);
-                placeObject.transform.SetPositionAndRotation(hitPose.position, hitPose.rotation);
+                placeObject.transform.SetPositionAndRotation(hitPose.position, placeObject.transform.rotation);
             }
         }
     }
@@ -101,7 +94,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Touch touchZero = Input.GetTouch(0);
             Touch touchOne = Input.GetTouch(1);
-
+            if (touchZero.position.y < 120 || touchOne.position.y < 120) return;
             if (touchZero.phase == TouchPhase.Moved && touchOne.phase == TouchPhase.Moved)
             {
                 rotateY = (touchOne.deltaPosition.x + touchZero.deltaPosition.x) / 2;
@@ -110,22 +103,9 @@ public class ARPlaceOnPlane : MonoBehaviour
             }
         }
     }
-    
     private void resizeObjectByTouch()
     {
-        if (Input.touchCount == 1)
-        {
-            Touch touch = Input.GetTouch(0);
-            List<ARRaycastHit> hits = new List<ARRaycastHit>();
-            if (touch.position.y < -839) return;
-            if(arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
-            {
-                Pose hitPose = hits[0].pose;
-                placeObject.SetActive(true);
-                placeObject.transform.SetPositionAndRotation(hitPose.position, hitPose.rotation);
-            }
-        }
-        else if (Input.touchCount >= 2)
+        if (Input.touchCount >= 2)
         {
             if (getRealSize)
             {
@@ -137,7 +117,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             // Get Touch points.
             Touch touchZero = Input.GetTouch(0);
             Touch touchOne = Input.GetTouch(1);
-            if (touchZero.position.y < -839 || touchOne.position.y < -839) return;
+            if (touchZero.position.y < 120 || touchOne.position.y < 120) return;
             // Find the position in the previous frame of each touch.
             Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
             Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
@@ -158,20 +138,11 @@ public class ARPlaceOnPlane : MonoBehaviour
             // Set new scale. 
             Vector3 newScale = new Vector3(pinchAmount, pinchAmount, pinchAmount);
             placeObject.transform.localScale = Vector3.Lerp(prevScale, newScale, Time.deltaTime);
-
-            // scaleX.text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
-            // scaleY.text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
-            // scaleZ.text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
+            modelDepth.GetComponent<TextMeshPro>().text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
+            modelHeight.GetComponent<TextMeshPro>().text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
+            modelWidth.GetComponent<TextMeshPro>().text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
         }
     }
-    
-    private void PlaceObjectRotate()
-    {
-        //placeObject.transform.localEulerAngles; 
-        //placeObject.transform.Rotate(rotation + new Vector3(0,0.03f,0) * sliderValue);
-        ////
-    }
-
     void OnPlaneChanged(ARPlanesChangedEventArgs args)
     {
         if(args.updated != null && args.updated.Count>0){
@@ -181,63 +152,6 @@ public class ARPlaceOnPlane : MonoBehaviour
             }
         }
     }
-
-    private void PlaceObjectByTouch() {
-        /*if (Input.touchCount > 0)
-        {
-            Touch touch = Input.GetTouch(0);
-            List<ARRaycastHit> hits = new List<ARRaycastHit>();
-            if (arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
-            {
-                Pose hitPose = hits[0].pose;
-                Vector3 upPosition = hitPose.position + new Vector3(0, 0.4f, 0);
-                if (!spawnObject)
-                {
-                    spawnObject = Instantiate(placeObject, upPosition, hitPose.rotation);
-                    //Vector3 upPosition = hitPose.position;
-                    tx.text = upPosition.ToString();
-                }
-                else
-                {
-                    spawnObject.transform.SetPositionAndRotation(upPosition, hitPose.rotation);
-                    //Vector3 upPosition = hitPose.position;
-                    tx.text = upPosition.ToString();
-                }
-            }
-        }*/
-
-        /*if (Input.touchCount > 0)
-        {
-            Touch touch = Input.GetTouch(0);
-            if (!spawnObject)
-            {
-                Debug.Log(touch.position);
-                spawnObject = Instantiate(placeObject, touch.position, Quaternion.Euler(new Vector3(0,0,0)));
-            }
-            else 
-            {
-                spawnObject.transform.SetPositionAndRotation(touch.position, Quaternion.Euler(new Vector3(0,0,0)));
-            }
-            
-            spawnObject.SetActive(true);
-        }
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 mousePos = Input.mousePosition;
-            if (!spawnObject)
-            {
-                Debug.Log(mousePos);
-                spawnObject = Instantiate(placeObject, Vector3.zero, Quaternion.Euler(new Vector3(0,0,0)));
-            }
-            else 
-            {
-                spawnObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.Euler(new Vector3(0,0,0)));
-            }
-            
-            spawnObject.SetActive(true);
-        }*/
-    }
-
     private void UpdateCenterObject()
     {
         Vector3 screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
@@ -250,8 +164,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             position = placementPose.position + new Vector3(0, 0.4f, 0);
             placeObject.SetActive(true);
             checkObject.SetActive(true);
-            Vector3 currentRotation = rotation + new Vector3(0, 1, 0) * sliderValue;
-            placeObject.transform.SetPositionAndRotation(position, Quaternion.Euler(currentRotation));
+            placeObject.transform.position = position;
             checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0,0,0)));
         }
         else // 인식되는 평면이 없는 경우
@@ -260,29 +173,24 @@ public class ARPlaceOnPlane : MonoBehaviour
             placeObject.SetActive(false);
         }
     }
-    public void buttonOnClickTo1() // 이동
+    public void buttonToPosition() // 이동
     {
-        mode = 1; 
+        mode = (mode == 5 || mode == 2) ? 4 : 1;
     }
-    public void buttonOnClickTo2() // 회전
+    public void buttonToRotate() // 회전
     {
         mode = 2;
-        //rotation = rotation + new Vector3(0,1,0) * sliderValue;
     }
-    public void buttonOnClickTo3() // 배치
+    public void buttonToBatch() // 배치
     {
-        mode = 3;
-        checkObject.SetActive(false);
-        // myRigid = placeObject.GetComponent<Rigidbody>();
-        // myRigid.useGravity = false;
+        mode = (mode == 4 || mode == 2) ? 4 : 3;
+        // 회전 또는 터치일 때 배치 누르면 mode 4로
     }
-
-    public void buttonOnClickTo4() // 
+    public void buttonToTouch() // 
     {
         mode = 4;
     }
-
-    public void buttonOnClickTo5()
+    public void buttonToResize()
     {
         mode = 5;
     }
