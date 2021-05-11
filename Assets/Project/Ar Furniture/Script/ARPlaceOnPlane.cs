@@ -48,7 +48,7 @@ public class ARPlaceOnPlane : MonoBehaviour
 
     void Update() //
     {
-        tx.text = mode.ToString();
+        tx.text = placeObject.transform.position.ToString();
         if (mode == 1) // 이동
         {
             tx.text = "가구 이동";
@@ -72,17 +72,17 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             tx.text = "가구 이동";
             placeObjectByTouch();
-            resizeObjectByTouch();
+            // resizeObjectByTouch();
         }
         else if (mode == 5) // 리사이징 모드
         {
             tx.text = "사이즈 변경";
-            //resizeObjectByTouch();
+            // resizeObjectByTouch();
         }
     }
     private void placeObjectByTouch()
     {
-        if(Input.touchCount == 1)
+        if (Input.touchCount == 1)
         {
             Touch touch = Input.GetTouch(0);
             List<ARRaycastHit> hits = new List<ARRaycastHit>();
@@ -95,7 +95,6 @@ public class ARPlaceOnPlane : MonoBehaviour
             }
         }
     }
-    
     private void rotateObject()
     {
         if (Input.touchCount >= 2)
@@ -114,7 +113,19 @@ public class ARPlaceOnPlane : MonoBehaviour
     
     private void resizeObjectByTouch()
     {
-        if (Input.touchCount >= 2)
+        if (Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+            List<ARRaycastHit> hits = new List<ARRaycastHit>();
+            if (touch.position.y < -839) return;
+            if(arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
+            {
+                Pose hitPose = hits[0].pose;
+                placeObject.SetActive(true);
+                placeObject.transform.SetPositionAndRotation(hitPose.position, hitPose.rotation);
+            }
+        }
+        else if (Input.touchCount >= 2)
         {
             if (getRealSize)
             {
@@ -126,7 +137,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             // Get Touch points.
             Touch touchZero = Input.GetTouch(0);
             Touch touchOne = Input.GetTouch(1);
-
+            if (touchZero.position.y < -839 || touchOne.position.y < -839) return;
             // Find the position in the previous frame of each touch.
             Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
             Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
@@ -148,9 +159,9 @@ public class ARPlaceOnPlane : MonoBehaviour
             Vector3 newScale = new Vector3(pinchAmount, pinchAmount, pinchAmount);
             placeObject.transform.localScale = Vector3.Lerp(prevScale, newScale, Time.deltaTime);
 
-            //scaleX.text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
-            //scaleY.text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
-            //scaleZ.text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
+            // scaleX.text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
+            // scaleY.text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
+            // scaleZ.text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
         }
     }
     
