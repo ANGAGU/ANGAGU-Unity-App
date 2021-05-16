@@ -19,7 +19,10 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject modelHeight;
     public GameObject modelWidth;
     public GameObject modelDepth;
-
+    public GameObject humanGirl;
+    public GameObject humanBoy;
+    public GameObject heightText;
+    
     private GameObject spawnObject;
     private bool buttonClick = true;
     private Rigidbody myRigid;
@@ -34,7 +37,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     private float rotationRate = 0.15f;
     private float rotateY;
     private float originScale;
-    
+    private bool modelOk = true;
     public ARPlaneManager arPlaneManager;
     
     private void Start()
@@ -45,11 +48,15 @@ public class ARPlaceOnPlane : MonoBehaviour
         modelHeight.SetActive(false);
         modelWidth.SetActive(false);
         modelDepth.SetActive(false);
+        humanBoy.SetActive(false);
+        humanGirl.SetActive(false);
+        heightText.SetActive(false);
     }
 
     void Update()
     {
-        tx.text = placeObject.transform.position.ToString();
+        
+        // tx.text = placeObject.transform.position.ToString();
         if (mode == 1) // 이동
         {
             UpdateCenterObject();
@@ -145,8 +152,9 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     void OnPlaneChanged(ARPlanesChangedEventArgs args)
     {
-        if(args.updated != null && args.updated.Count>0){
-            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.1f))
+        if(args.updated != null && args.updated.Count > 0)
+        {
+            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.25f))
             {
                 plane.gameObject.SetActive(true);
             }
@@ -162,6 +170,17 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Pose placementPose = hits[0].pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
+            if (modelOk)
+            {
+                humanGirl.SetActive(true);
+                heightText.SetActive(true);
+                heightText.GetComponent<TextMeshPro>().text = "180cm";
+                heightText.transform.SetPositionAndRotation(placementPose.position + new Vector3(0,2,0), placementPose.rotation);
+                humanGirl.transform.SetPositionAndRotation(placementPose.position, placementPose.rotation);
+                humanGirl.transform.Rotate(0,
+                    -180, 0, Space.World);
+                modelOk = false;
+            }
             placeObject.SetActive(true);
             checkObject.SetActive(true);
             placeObject.transform.position = position;
@@ -175,7 +194,15 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     public void buttonToPosition() // 이동
     {
-        mode = (mode == 5 || mode == 2) ? 4 : 1;
+        if (mode == 5 || mode == 2)
+        {
+            mode = 1;
+            modelOk = true;
+        }
+        else
+        {
+            mode = 2;
+        }
     }
     public void buttonToRotate() // 회전
     {
@@ -193,5 +220,11 @@ public class ARPlaceOnPlane : MonoBehaviour
     public void buttonToResize()
     {
         mode = 5;
+    }
+
+    public void toggleHuman()
+    {
+        modelOk = !modelOk;
+        humanGirl.SetActive(modelOk);
     }
 }
