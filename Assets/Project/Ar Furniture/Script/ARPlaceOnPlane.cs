@@ -49,6 +49,12 @@ public class ARPlaceOnPlane : MonoBehaviour
 
     void Update()
     {
+        if (!placeObject)
+        {
+            Debug.Log("!!!");
+            placeObject = GameObject.FindWithTag("Model");
+        }
+        
         tx.text = placeObject.transform.position.ToString();
         if (mode == 1) // 이동
         {
