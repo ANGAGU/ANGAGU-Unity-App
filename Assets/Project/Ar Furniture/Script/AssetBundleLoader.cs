@@ -8,7 +8,7 @@ public class AssetBundleLoader : MonoBehaviour
 {
     // Start is called before the first frame update
 
-    private string modelName = "testModel/daechair";
+    private string modelName = "testModel/objbed";
     GameObject modelObject;
     IEnumerator Start()
     {
@@ -30,24 +30,10 @@ public class AssetBundleLoader : MonoBehaviour
             {
                 Debug.Log("Asset Load Error");
             }
-            AssetBundleRequest prefab = assetFile.LoadAssetAsync("DesignChair");
+            AssetBundleRequest prefab = assetFile.LoadAssetAsync("IKE050020");
             yield return prefab;
             modelObject = prefab.asset as GameObject;
         }
-
-
-        //var assetFile = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "daechair"));
-        //Debug.Log(Application.streamingAssetsPath + "/daechair");
-
-        //if (assetFile == null)
-        //{
-        //    Debug.Log("Asset Load Error");
-        //}
-        //AssetBundleRequest prefab = assetFile.LoadAssetAsync("DesignChair");
-        //yield return prefab;
-        //GameObject modelObject = prefab.asset as GameObject;
-
-
 
 
         /**** init for .dae file ****/
@@ -57,12 +43,8 @@ public class AssetBundleLoader : MonoBehaviour
         daeObject.transform.tag = "Model";
 
         // destroy camera object in .dae
-        Destroy(daeObject.transform.GetChild(0).gameObject);
+        // Destroy(daeObject.transform.GetChild(0).gameObject);
         daeObject.AddComponent<sizeInit>();
-
-
-
-
 
 
     }
