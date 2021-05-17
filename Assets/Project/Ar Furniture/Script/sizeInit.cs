@@ -10,7 +10,7 @@ public class sizeInit : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        resizing(new Vector3(0.5f, 0.5f, 0.7f));
+        resizing(new Vector3(2.0f, 0.5f, 1.0f));
     }
 
     // Update is called once per frame
@@ -45,5 +45,6 @@ public class sizeInit : MonoBehaviour
         float resizeRate = realSize.x / boundSize.x;
         transform.localScale = new Vector3(resizeRate, resizeRate, resizeRate);
         originModel.transform.localScale = new Vector3(resizeRate, resizeRate, resizeRate);
+        originModel.transform.position = new Vector3(boundSize.x * resizeRate, boundSize.y * resizeRate, boundSize.z * resizeRate);
     }
 }

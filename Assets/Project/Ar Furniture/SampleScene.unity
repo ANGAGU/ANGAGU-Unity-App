@@ -2918,6 +2918,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: rp_nathan_animated_003_walking
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7f5754713a109de4ab9a0a108d32f24c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7f5754713a109de4ab9a0a108d32f24c, type: 3}
 --- !u!1 &1510289649 stripped

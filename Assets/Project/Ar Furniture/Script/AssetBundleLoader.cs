@@ -8,7 +8,7 @@ public class AssetBundleLoader : MonoBehaviour
 {
     // Start is called before the first frame update
 
-    private string modelName = "testModel/objchair";
+    private string modelName = "testModel/objbed";
     GameObject modelObject;
     IEnumerator Start()
     {
@@ -30,7 +30,7 @@ public class AssetBundleLoader : MonoBehaviour
             {
                 Debug.Log("Asset Load Error");
             }
-            AssetBundleRequest prefab = assetFile.LoadAssetAsync("objChair");
+            AssetBundleRequest prefab = assetFile.LoadAssetAsync("IKE050020");
             yield return prefab;
             modelObject = prefab.asset as GameObject;
         }

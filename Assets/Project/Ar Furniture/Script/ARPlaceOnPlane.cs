@@ -26,6 +26,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject lightPanel;
 
     private GameObject spawnObject;
+    private GameObject originModel;
     private bool buttonClick = true;
     private Rigidbody myRigid;
     private Vector3 rotation;
@@ -64,6 +65,12 @@ public class ARPlaceOnPlane : MonoBehaviour
             Debug.Log("!!!");
             placeObject = GameObject.FindWithTag("Model");
         }
+        if (getRealSize)
+        {
+            originModel = GameObject.FindWithTag("OriginModel");
+            originScale = originModel.transform.localScale.x;
+            getRealSize = false;
+        }
 
         if (mode == 1) // 이동 및 초기화
         {
@@ -77,16 +84,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             mode = 4;
             placeObject.transform.position = checkObject.transform.position;
-            // tx.text = checkObject.transform.position.ToString();
             checkObject.SetActive(false);
-        }
-        else if (mode == 4) // 가구 이동
-        {
-            // placeObjectByTouch();
-        }
-        else if (mode == 5) // 리사이징 모드
-        {
-            // resizeObjectByTouch();
         }
     }
     private void placeObjectByTouch()
@@ -116,6 +114,8 @@ public class ARPlaceOnPlane : MonoBehaviour
                 rotateY = (touchOne.deltaPosition.x + touchZero.deltaPosition.x) / 2;
                 placeObject.transform.Rotate(0,
                     -rotateY * rotationRate, 0, Space.World);
+                checkObject.transform.Rotate(0,
+                    -rotateY * rotationRate, 0, Space.World);
             }
         }
     }
@@ -125,7 +125,8 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             if (getRealSize)
             {
-                originScale = GameObject.FindWithTag("OriginModel").transform.localScale.x;
+                originModel = GameObject.FindWithTag("OriginModel");
+                originScale = originModel.transform.localScale.x;
                 getRealSize = false;
             }
             // 실제 저장해놨던 scale 가져오기
@@ -154,9 +155,6 @@ public class ARPlaceOnPlane : MonoBehaviour
             // Set new scale. 
             Vector3 newScale = new Vector3(pinchAmount, pinchAmount, pinchAmount);
             placeObject.transform.localScale = Vector3.Lerp(prevScale, newScale, Time.deltaTime);
-            modelDepth.GetComponent<TextMeshPro>().text = (51.8f * placeObject.transform.localScale.x * 100).ToString();
-            modelHeight.GetComponent<TextMeshPro>().text = (77.3f * placeObject.transform.localScale.y * 100).ToString();
-            modelWidth.GetComponent<TextMeshPro>().text = (53.0f * placeObject.transform.localScale.z * 100).ToString();
         }
     }
     void OnPlaneChanged(ARPlanesChangedEventArgs args)
@@ -173,7 +171,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         Vector3 screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
         List<ARRaycastHit> hits = new List<ARRaycastHit>();
-        arRaycaster.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon);
+        arRaycaster.Raycast(screenCenter, hits, TrackableType.PlaneWithinBounds);
 
         if (hits.Count > 0) // 인식되는 평면이 있는 경우
         {
@@ -183,9 +181,6 @@ public class ARPlaceOnPlane : MonoBehaviour
             if (modelOk)
             {
                 humanGirl.SetActive(true);
-                //heightText.SetActive(true);
-                //heightText.GetComponent<TextMeshPro>().text = "180cm";
-                //heightText.transform.SetPositionAndRotation(placementPose.position + new Vector3(0,2,0), placementPose.rotation);
                 humanGirl.transform.SetPositionAndRotation(placementPose.position, placementPose.rotation);
                 humanGirl.transform.Rotate(0,
                     -180, 0, Space.World);
@@ -196,8 +191,9 @@ public class ARPlaceOnPlane : MonoBehaviour
             checkObject.SetActive(true);
             placeObject.transform.position = position;
 
-            checkObject.transform.localScale = new Vector3(placeObject.transform.localScale.x, 0, placeObject.transform.localScale.z);
-            checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0, 0, 0)));
+            checkObject.transform.localScale = new Vector3(originModel.transform.position.x, 0, originModel.transform.position.z);
+            // checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0, 0, 0)));
+            checkObject.transform.position = placementPose.position;
         }
         else // 인식되는 평면이 없는 경우
         {
@@ -217,14 +213,6 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         mode = 3;
         // 회전 또는 터치일 때 배치 누르면 mode 4로
-    }
-    public void buttonToTouch() // 
-    {
-        mode = 4;
-    }
-    public void buttonToResize()
-    {
-        mode = 5;
     }
 
     public void toggleHuman()
@@ -251,13 +239,11 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         Light lt = directionLight.GetComponent<Light>();
         lt.color = new Color(255 / 255f, 160 / 255f, 160 / 255f, 140 / 255);
-        // lt.color = Color.red;
         lightPanel.SetActive(false);
     }
     public void setLightYellow()
     {
         Light lt = directionLight.GetComponent<Light>();
-        // lt.color = Color.yellow;
         lt.color = new Color(1, 0.92f, 0.016f, 0.5f);
         lightPanel.SetActive(false);
     }
@@ -265,7 +251,6 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         Light lt = directionLight.GetComponent<Light>();
         lt.color = new Color((167 / 255f), 251 / 255f, 255 / 255f, 150 / 255);
-        // lt.color = Color.blue;
         lightPanel.SetActive(false);
         touchThreshold = 120;
     }
@@ -273,7 +258,6 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         Light lt = directionLight.GetComponent<Light>();
         lt.color = new Color(174 / 255f, 255 / 255f, 160 / 255f, 123 / 255);
-        // lt.color = Color.green;
         lightPanel.SetActive(false);
         touchThreshold = 120;
     }
@@ -281,9 +265,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         Light lt = directionLight.GetComponent<Light>();
         lt.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 123 / 255);
-        // lt.color = Color.white;
         lightPanel.SetActive(false);
         touchThreshold = 120;
     }
-
 }
