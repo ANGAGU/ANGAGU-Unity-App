@@ -19,24 +19,30 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject modelHeight;
     public GameObject modelWidth;
     public GameObject modelDepth;
+    public GameObject humanGirl;
+    public GameObject humanBoy;
+    public GameObject heightText;
+    public GameObject directionLight;
+    public GameObject lightPanel;
 
     private GameObject spawnObject;
     private bool buttonClick = true;
     private Rigidbody myRigid;
     private Vector3 rotation;
     private Vector3 position;
-    
-    private float sliderValue ;
-    private int mode = 1; // 1->이동, 2->회전, 3->배치
+
+    private float sliderValue;
+    private int mode; // 1->이동, 2->회전, 3->배치
     private bool getRealSize = true;
-    
+
     private float scaleRate = -0.15f;
     private float rotationRate = 0.15f;
     private float rotateY;
     private float originScale;
-    
+    private bool modelOk = true;
+    private bool humanVis = false;
     public ARPlaneManager arPlaneManager;
-    
+    private int touchThreshold = 120;
     private void Start()
     {
         sliderValue = 0;
@@ -45,8 +51,12 @@ public class ARPlaceOnPlane : MonoBehaviour
         modelHeight.SetActive(false);
         modelWidth.SetActive(false);
         modelDepth.SetActive(false);
+        humanBoy.SetActive(false);
+        humanGirl.SetActive(false);
+        heightText.SetActive(false);
+        lightPanel.SetActive(false);
+        mode = 1;
     }
-
     void Update()
     {
         if (!placeObject)
@@ -54,9 +64,8 @@ public class ARPlaceOnPlane : MonoBehaviour
             Debug.Log("!!!");
             placeObject = GameObject.FindWithTag("Model");
         }
-        
-        tx.text = placeObject.transform.position.ToString();
-        if (mode == 1) // 이동
+
+        if (mode == 1) // 이동 및 초기화
         {
             UpdateCenterObject();
         }
@@ -68,15 +77,16 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             mode = 4;
             placeObject.transform.position = checkObject.transform.position;
+            // tx.text = checkObject.transform.position.ToString();
             checkObject.SetActive(false);
         }
         else if (mode == 4) // 가구 이동
         {
-            placeObjectByTouch();
+            // placeObjectByTouch();
         }
         else if (mode == 5) // 리사이징 모드
         {
-            resizeObjectByTouch();
+            // resizeObjectByTouch();
         }
     }
     private void placeObjectByTouch()
@@ -85,8 +95,8 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Touch touch = Input.GetTouch(0);
             List<ARRaycastHit> hits = new List<ARRaycastHit>();
-            if (touch.position.y < 120) return;
-            if(arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
+            if (touch.position.y < 220) return;
+            if (arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
             {
                 Pose hitPose = hits[0].pose;
                 placeObject.SetActive(true);
@@ -100,7 +110,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Touch touchZero = Input.GetTouch(0);
             Touch touchOne = Input.GetTouch(1);
-            if (touchZero.position.y < 120 || touchOne.position.y < 120) return;
+            if (touchZero.position.y < 220 || touchOne.position.y < 220) return;
             if (touchZero.phase == TouchPhase.Moved && touchOne.phase == TouchPhase.Moved)
             {
                 rotateY = (touchOne.deltaPosition.x + touchZero.deltaPosition.x) / 2;
@@ -119,7 +129,7 @@ public class ARPlaceOnPlane : MonoBehaviour
                 getRealSize = false;
             }
             // 실제 저장해놨던 scale 가져오기
-            
+
             // Get Touch points.
             Touch touchZero = Input.GetTouch(0);
             Touch touchOne = Input.GetTouch(1);
@@ -139,7 +149,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             Vector3 prevScale = placeObject.transform.localScale;
 
             // Calculate pinch amount with max, min.
-            float pinchAmount = Mathf.Clamp(prevScale.x + deltaMagnitudeDiff * Time.deltaTime*(-originScale), originScale/2, originScale);
+            float pinchAmount = Mathf.Clamp(prevScale.x + deltaMagnitudeDiff * Time.deltaTime * (-originScale), originScale / 2, originScale);
 
             // Set new scale. 
             Vector3 newScale = new Vector3(pinchAmount, pinchAmount, pinchAmount);
@@ -151,7 +161,8 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     void OnPlaneChanged(ARPlanesChangedEventArgs args)
     {
-        if(args.updated != null && args.updated.Count>0){
+        if (args.updated != null && args.updated.Count > 0)
+        {
             foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.1f))
             {
                 plane.gameObject.SetActive(true);
@@ -162,16 +173,31 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         Vector3 screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
         List<ARRaycastHit> hits = new List<ARRaycastHit>();
-        arRaycaster.Raycast(screenCenter, hits,TrackableType.PlaneWithinPolygon);
+        arRaycaster.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon);
 
         if (hits.Count > 0) // 인식되는 평면이 있는 경우
         {
             Pose placementPose = hits[0].pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
+
+            if (modelOk)
+            {
+                humanGirl.SetActive(true);
+                //heightText.SetActive(true);
+                //heightText.GetComponent<TextMeshPro>().text = "180cm";
+                //heightText.transform.SetPositionAndRotation(placementPose.position + new Vector3(0,2,0), placementPose.rotation);
+                humanGirl.transform.SetPositionAndRotation(placementPose.position, placementPose.rotation);
+                humanGirl.transform.Rotate(0,
+                    -180, 0, Space.World);
+                modelOk = false;
+                humanVis = true;
+            }
             placeObject.SetActive(true);
             checkObject.SetActive(true);
             placeObject.transform.position = position;
-            checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0,0,0)));
+
+            checkObject.transform.localScale = new Vector3(placeObject.transform.localScale.x, 0, placeObject.transform.localScale.z);
+            checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0, 0, 0)));
         }
         else // 인식되는 평면이 없는 경우
         {
@@ -181,7 +207,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     public void buttonToPosition() // 이동
     {
-        mode = (mode == 5 || mode == 2) ? 4 : 1;
+        mode = 1;
     }
     public void buttonToRotate() // 회전
     {
@@ -189,7 +215,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     public void buttonToBatch() // 배치
     {
-        mode = (mode == 4 || mode == 2) ? 4 : 3;
+        mode = 3;
         // 회전 또는 터치일 때 배치 누르면 mode 4로
     }
     public void buttonToTouch() // 
@@ -200,4 +226,64 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         mode = 5;
     }
+
+    public void toggleHuman()
+    {
+        if (humanVis)
+        {
+            humanGirl.SetActive(false);
+            humanVis = false;
+        }
+        else
+        {
+            humanGirl.SetActive(true);
+            humanVis = true;
+            modelOk = true;
+        }
+    }
+
+    public void selectLight()
+    {
+        lightPanel.SetActive(true);
+    }
+
+    public void setLightRed()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color(255 / 255f, 160 / 255f, 160 / 255f, 140 / 255);
+        // lt.color = Color.red;
+        lightPanel.SetActive(false);
+    }
+    public void setLightYellow()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        // lt.color = Color.yellow;
+        lt.color = new Color(1, 0.92f, 0.016f, 0.5f);
+        lightPanel.SetActive(false);
+    }
+    public void setLightBlue()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color((167 / 255f), 251 / 255f, 255 / 255f, 150 / 255);
+        // lt.color = Color.blue;
+        lightPanel.SetActive(false);
+        touchThreshold = 120;
+    }
+    public void setLightGreen()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color(174 / 255f, 255 / 255f, 160 / 255f, 123 / 255);
+        // lt.color = Color.green;
+        lightPanel.SetActive(false);
+        touchThreshold = 120;
+    }
+    public void setLightPupple()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 123 / 255);
+        // lt.color = Color.white;
+        lightPanel.SetActive(false);
+        touchThreshold = 120;
+    }
+
 }

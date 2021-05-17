@@ -6,6 +6,7 @@ public class sizeInit : MonoBehaviour
 {
     [SerializeField]
     private GameObject originModel;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -15,7 +16,7 @@ public class sizeInit : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
     void OnDrawGizmosSelected()
     {
@@ -40,8 +41,8 @@ public class sizeInit : MonoBehaviour
         Debug.Log(totalBounds.size);
 
         Vector3 boundSize = totalBounds.size;
-    
-        float resizeRate =  realSize.x / boundSize.x;
+
+        float resizeRate = realSize.x / boundSize.x;
         transform.localScale = new Vector3(resizeRate, resizeRate, resizeRate);
         originModel.transform.localScale = new Vector3(resizeRate, resizeRate, resizeRate);
     }
