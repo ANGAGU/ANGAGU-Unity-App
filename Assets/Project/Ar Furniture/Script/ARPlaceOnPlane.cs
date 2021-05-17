@@ -187,6 +187,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             placeObject.SetActive(true);
             checkObject.SetActive(true);
             placeObject.transform.position = position;
+            checkObject.transform.localScale = new Vector3(placeObject.transform.localScale.x, 0, placeObject.transform.localScale.z);
             checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0,0,0)));
         }
         else // 인식되는 평면이 없는 경우
@@ -197,14 +198,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     public void buttonToPosition() // 이동
     {
-        if (mode == 5 || mode == 2)
-        {
-            mode = 2;
-        }
-        else
-        {
-            mode = 1;
-        }
+        mode = 1;
     }
     public void buttonToRotate() // 회전
     {
@@ -235,6 +229,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             humanGirl.SetActive(true);
             humanVis = true;
+            modelOk = true;
         }
     }
 
