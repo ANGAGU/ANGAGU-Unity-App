@@ -32,7 +32,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     private Vector3 position;
     
     private float sliderValue ;
-    private int mode = 1; // 1->이동, 2->회전, 3->배치
+    private int mode; // 1->이동, 2->회전, 3->배치
     private bool getRealSize = true;
     
     private float scaleRate = -0.15f;
@@ -55,6 +55,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         humanGirl.SetActive(false);
         heightText.SetActive(false);
         lightPanel.SetActive(false);
+        mode = 1;
     }
     void Update()
     {
@@ -71,16 +72,16 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             mode = 4;
             placeObject.transform.position = checkObject.transform.position;
-            tx.text = checkObject.transform.position.ToString();
-            checkObject.SetActive(true);
+            // tx.text = checkObject.transform.position.ToString();
+            checkObject.SetActive(false);
         }
         else if (mode == 4) // 가구 이동
         {
-            placeObjectByTouch();
+            // placeObjectByTouch();
         }
         else if (mode == 5) // 리사이징 모드
         {
-            resizeObjectByTouch();
+            // resizeObjectByTouch();
         }
     }
     private void placeObjectByTouch()
@@ -157,7 +158,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         if(args.updated != null && args.updated.Count > 0)
         {
-            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.25f))
+            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.1f))
             {
                 plane.gameObject.SetActive(true);
             }
@@ -177,9 +178,9 @@ public class ARPlaceOnPlane : MonoBehaviour
             if (modelOk)
             {
                 humanGirl.SetActive(true);
-                heightText.SetActive(true);
-                heightText.GetComponent<TextMeshPro>().text = "180cm";
-                heightText.transform.SetPositionAndRotation(placementPose.position + new Vector3(0,2,0), placementPose.rotation);
+                //heightText.SetActive(true);
+                //heightText.GetComponent<TextMeshPro>().text = "180cm";
+                //heightText.transform.SetPositionAndRotation(placementPose.position + new Vector3(0,2,0), placementPose.rotation);
                 humanGirl.transform.SetPositionAndRotation(placementPose.position, placementPose.rotation);
                 humanGirl.transform.Rotate(0,
                     -180, 0, Space.World);
@@ -209,7 +210,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     public void buttonToBatch() // 배치
     {
-        mode = (mode == 4 || mode == 2) ? 4 : 3;
+        mode = 3;
         // 회전 또는 터치일 때 배치 누르면 mode 4로
     }
     public void buttonToTouch() // 
