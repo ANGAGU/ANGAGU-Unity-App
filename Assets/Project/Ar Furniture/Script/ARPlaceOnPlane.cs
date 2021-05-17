@@ -22,6 +22,8 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject humanGirl;
     public GameObject humanBoy;
     public GameObject heightText;
+    public GameObject directionLight;
+    public GameObject lightPanel;
     
     private GameObject spawnObject;
     private bool buttonClick = true;
@@ -38,8 +40,9 @@ public class ARPlaceOnPlane : MonoBehaviour
     private float rotateY;
     private float originScale;
     private bool modelOk = true;
+    private bool humanVis = false;
     public ARPlaneManager arPlaneManager;
-    
+    private int touchThreshold = 120;
     private void Start()
     {
         sliderValue = 0;
@@ -51,11 +54,10 @@ public class ARPlaceOnPlane : MonoBehaviour
         humanBoy.SetActive(false);
         humanGirl.SetActive(false);
         heightText.SetActive(false);
+        lightPanel.SetActive(false);
     }
-
     void Update()
     {
-        
         // tx.text = placeObject.transform.position.ToString();
         if (mode == 1) // 이동
         {
@@ -86,7 +88,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Touch touch = Input.GetTouch(0);
             List<ARRaycastHit> hits = new List<ARRaycastHit>();
-            if (touch.position.y < 120) return;
+            if (touch.position.y < 220) return;
             if(arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
             {
                 Pose hitPose = hits[0].pose;
@@ -101,7 +103,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Touch touchZero = Input.GetTouch(0);
             Touch touchOne = Input.GetTouch(1);
-            if (touchZero.position.y < 120 || touchOne.position.y < 120) return;
+            if (touchZero.position.y < 220 || touchOne.position.y < 220) return;
             if (touchZero.phase == TouchPhase.Moved && touchOne.phase == TouchPhase.Moved)
             {
                 rotateY = (touchOne.deltaPosition.x + touchZero.deltaPosition.x) / 2;
@@ -180,6 +182,7 @@ public class ARPlaceOnPlane : MonoBehaviour
                 humanGirl.transform.Rotate(0,
                     -180, 0, Space.World);
                 modelOk = false;
+                humanVis = true;
             }
             placeObject.SetActive(true);
             checkObject.SetActive(true);
@@ -196,12 +199,11 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         if (mode == 5 || mode == 2)
         {
-            mode = 1;
-            modelOk = true;
+            mode = 2;
         }
         else
         {
-            mode = 2;
+            mode = 1;
         }
     }
     public void buttonToRotate() // 회전
@@ -224,7 +226,60 @@ public class ARPlaceOnPlane : MonoBehaviour
 
     public void toggleHuman()
     {
-        modelOk = !modelOk;
-        humanGirl.SetActive(modelOk);
+        if (humanVis)
+        {
+            humanGirl.SetActive(false);
+            humanVis = false;
+        }
+        else
+        {
+            humanGirl.SetActive(true);
+            humanVis = true;
+        }
     }
+
+    public void selectLight()
+    {
+        lightPanel.SetActive(true);
+    }
+
+    public void setLightRed()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color(255/255f,160/255f,160/255f,140/255);
+        // lt.color = Color.red;
+        lightPanel.SetActive(false);
+    }
+    public void setLightYellow()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        // lt.color = Color.yellow;
+        lt.color = new Color(1, 0.92f, 0.016f, 0.5f);
+        lightPanel.SetActive(false);
+    }
+    public void setLightBlue()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color((167/255f),251/255f,255/255f,150/255);
+        // lt.color = Color.blue;
+        lightPanel.SetActive(false);        
+        touchThreshold = 120;
+    }
+    public void setLightGreen()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color(174/255f,255/255f,160/255f,123/255);
+        // lt.color = Color.green;
+        lightPanel.SetActive(false);
+        touchThreshold = 120;
+    }
+    public void setLightPupple()
+    {
+        Light lt = directionLight.GetComponent<Light>();
+        lt.color = new Color(255/255f,255/255f,255/255f,123/255);
+        // lt.color = Color.white;
+        lightPanel.SetActive(false);
+        touchThreshold = 120;
+    }
+    
 }
