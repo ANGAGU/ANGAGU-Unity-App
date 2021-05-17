@@ -58,8 +58,8 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     void Update()
     {
-        // tx.text = placeObject.transform.position.ToString();
-        if (mode == 1) // 이동
+        // tx.text = placeObject.transform.localPosition.ToString();
+        if (mode == 1) // 이동 및 초기화
         {
             UpdateCenterObject();
         }
@@ -71,7 +71,8 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             mode = 4;
             placeObject.transform.position = checkObject.transform.position;
-            checkObject.SetActive(false);
+            tx.text = checkObject.transform.position.ToString();
+            checkObject.SetActive(true);
         }
         else if (mode == 4) // 가구 이동
         {
@@ -172,6 +173,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Pose placementPose = hits[0].pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
+            
             if (modelOk)
             {
                 humanGirl.SetActive(true);
@@ -187,6 +189,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             placeObject.SetActive(true);
             checkObject.SetActive(true);
             placeObject.transform.position = position;
+            
             checkObject.transform.localScale = new Vector3(placeObject.transform.localScale.x, 0, placeObject.transform.localScale.z);
             checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0,0,0)));
         }
