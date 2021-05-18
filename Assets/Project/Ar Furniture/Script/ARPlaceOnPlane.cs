@@ -15,6 +15,8 @@ public class ARPlaceOnPlane : MonoBehaviour
     public ARRaycastManager arRaycaster;
     public GameObject placeObject;
     public Text tx;
+    public MeshRenderer _PlaneMeshRenderer;
+    public ARPlane _ARPlane;
     public GameObject checkObject;
     public GameObject modelHeight;
     public GameObject modelWidth;
@@ -24,7 +26,6 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject heightText;
     public GameObject directionLight;
     public GameObject lightPanel;
-    
     private GameObject spawnObject;
     private bool buttonClick = true;
     private Rigidbody myRigid;
@@ -46,7 +47,6 @@ public class ARPlaceOnPlane : MonoBehaviour
     private void Start()
     {
         sliderValue = 0;
-        arPlaneManager.planesChanged += OnPlaneChanged;
         rotation = new Vector3(0, 0, 0);
         modelHeight.SetActive(false);
         modelWidth.SetActive(false);
@@ -55,6 +55,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         humanGirl.SetActive(false);
         heightText.SetActive(false);
         lightPanel.SetActive(false);
+        arPlaneManager.planesChanged += OnPlaneChanged;
         mode = 1;
     }
     void Update()
@@ -158,7 +159,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         if(args.updated != null && args.updated.Count > 0)
         {
-            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.1f))
+            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.5f))
             {
                 plane.gameObject.SetActive(true);
             }
@@ -172,7 +173,7 @@ public class ARPlaceOnPlane : MonoBehaviour
 
         if (hits.Count > 0) // 인식되는 평면이 있는 경우
         {
-            Pose placementPose = hits[0].pose;
+            Pose placementPose = hits.Last().pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
             
             if (modelOk)
