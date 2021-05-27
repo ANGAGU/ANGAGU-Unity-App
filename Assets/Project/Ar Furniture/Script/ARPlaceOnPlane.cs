@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.UIElements;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using Slider = UnityEngine.UI.Slider;
 
 public class ARPlaceOnPlane : MonoBehaviour
 {
@@ -23,22 +24,23 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject heightText;
     public GameObject directionLight;
     public GameObject lightPanel;
-    
+
     private GameObject spawnObject;
+    private GameObject originModel;
     private bool buttonClick = true;
     private Rigidbody myRigid;
     private Vector3 rotation;
     private Vector3 position;
-    
-    private float sliderValue ;
+
+    private float sliderValue;
     private int mode; // 1->이동, 2->회전, 3->배치
     private bool getRealSize = true;
-    
+
     private float scaleRate = -0.15f;
     private float rotationRate = 0.15f;
     private float rotateY;
     private float originScale;
-    private bool modelOk = true;
+    private bool modelOk = false;
     private bool humanVis = false;
     public ARPlaneManager arPlaneManager;
     private int touchThreshold = 120;
@@ -58,6 +60,18 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     void Update()
     {
+        if (!placeObject)
+        {
+            Debug.Log("!!!");
+            placeObject = GameObject.FindWithTag("Model");
+        }
+        if (getRealSize)
+        {
+            originModel = GameObject.FindWithTag("OriginModel");
+            originScale = originModel.transform.localScale.x;
+            getRealSize = false;
+        }
+
         if (mode == 1) // 이동 및 초기화
         {
             UpdateCenterObject();
@@ -68,10 +82,9 @@ public class ARPlaceOnPlane : MonoBehaviour
         }
         else if (mode == 3) // 배치
         {
-            placeObject.transform.position = checkObject.transform.position;
-            // tx.text = checkObject.transform.position.ToString();
-            checkObject.SetActive(false);
             mode = 4;
+            placeObject.transform.position = checkObject.transform.position;
+            checkObject.SetActive(false);
         }
     }
     private void placeObjectByTouch()
@@ -81,7 +94,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             Touch touch = Input.GetTouch(0);
             List<ARRaycastHit> hits = new List<ARRaycastHit>();
             if (touch.position.y < 220) return;
-            if(arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
+            if (arRaycaster.Raycast(touch.position, hits, TrackableType.Planes))
             {
                 Pose hitPose = hits[0].pose;
                 placeObject.SetActive(true);
@@ -101,6 +114,8 @@ public class ARPlaceOnPlane : MonoBehaviour
                 rotateY = (touchOne.deltaPosition.x + touchZero.deltaPosition.x) / 2;
                 placeObject.transform.Rotate(0,
                     -rotateY * rotationRate, 0, Space.World);
+                checkObject.transform.Rotate(0,
+                    -rotateY * rotationRate, 0, Space.World);
             }
         }
     }
@@ -110,11 +125,12 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             if (getRealSize)
             {
-                originScale = GameObject.FindWithTag("OriginModel").transform.localScale.x;
+                originModel = GameObject.FindWithTag("OriginModel");
+                originScale = originModel.transform.localScale.x;
                 getRealSize = false;
             }
             // 실제 저장해놨던 scale 가져오기
-            
+
             // Get Touch points.
             Touch touchZero = Input.GetTouch(0);
             Touch touchOne = Input.GetTouch(1);
@@ -134,7 +150,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             Vector3 prevScale = placeObject.transform.localScale;
 
             // Calculate pinch amount with max, min.
-            float pinchAmount = Mathf.Clamp(prevScale.x + deltaMagnitudeDiff * Time.deltaTime*(-originScale), originScale/2, originScale);
+            float pinchAmount = Mathf.Clamp(prevScale.x + deltaMagnitudeDiff * Time.deltaTime * (-originScale), originScale / 2, originScale);
 
             // Set new scale. 
             Vector3 newScale = new Vector3(pinchAmount, pinchAmount, pinchAmount);
@@ -143,9 +159,9 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     void OnPlaneChanged(ARPlanesChangedEventArgs args)
     {
-        if(args.updated != null && args.updated.Count > 0)
+        if (args.updated != null && args.updated.Count > 0)
         {
-            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.1f))
+            foreach (ARPlane plane in args.updated.Where(plane => plane.extents.x * plane.extents.y >= 0.5f))
             {
                 plane.gameObject.SetActive(true);
             }
@@ -155,13 +171,13 @@ public class ARPlaceOnPlane : MonoBehaviour
     {
         Vector3 screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
         List<ARRaycastHit> hits = new List<ARRaycastHit>();
-        arRaycaster.Raycast(screenCenter, hits,TrackableType.PlaneWithinPolygon);
+        arRaycaster.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon);
 
         if (hits.Count > 0) // 인식되는 평면이 있는 경우
         {
-            Pose placementPose = hits[0].pose;
+            Pose placementPose = hits.Last().pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
-            
+
             if (modelOk)
             {
                 humanGirl.SetActive(true);
@@ -174,9 +190,14 @@ public class ARPlaceOnPlane : MonoBehaviour
             placeObject.SetActive(true);
             checkObject.SetActive(true);
             placeObject.transform.position = position;
-            
-            checkObject.transform.localScale = new Vector3(placeObject.transform.localScale.x, 0, placeObject.transform.localScale.z);
-            checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0,0,0)));
+
+            /*** 테스트용 그림자 사이즈 ***/
+            checkObject.transform.localScale = new Vector3(0.3f, 0, 0.3f);
+            /*** 이게 원래 코드 입니다. ***/
+            //checkObject.transform.localScale = new Vector3(originModel.transform.position.x, 0, originModel.transform.position.z);
+
+            // checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0, 0, 0)));
+            checkObject.transform.position = placementPose.position;
         }
         else // 인식되는 평면이 없는 경우
         {
@@ -195,6 +216,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     public void buttonToBatch() // 배치
     {
         mode = 3;
+        // 회전 또는 터치일 때 배치 누르면 mode 4로
     }
 
     public void toggleHuman()
@@ -220,7 +242,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     public void setLightRed()
     {
         Light lt = directionLight.GetComponent<Light>();
-        lt.color = new Color(255/255f,160/255f,160/255f,140/255);
+        lt.color = new Color(255 / 255f, 160 / 255f, 160 / 255f, 140 / 255);
         lightPanel.SetActive(false);
     }
     public void setLightYellow()
@@ -232,23 +254,22 @@ public class ARPlaceOnPlane : MonoBehaviour
     public void setLightBlue()
     {
         Light lt = directionLight.GetComponent<Light>();
-        lt.color = new Color((167/255f),251/255f,255/255f,150/255);
-        lightPanel.SetActive(false);        
+        lt.color = new Color((167 / 255f), 251 / 255f, 255 / 255f, 150 / 255);
+        lightPanel.SetActive(false);
         touchThreshold = 120;
     }
     public void setLightGreen()
     {
         Light lt = directionLight.GetComponent<Light>();
-        lt.color = new Color(174/255f,255/255f,160/255f,123/255);
+        lt.color = new Color(174 / 255f, 255 / 255f, 160 / 255f, 123 / 255);
         lightPanel.SetActive(false);
         touchThreshold = 120;
     }
     public void setLightPupple()
     {
         Light lt = directionLight.GetComponent<Light>();
-        lt.color = new Color(255/255f,255/255f,255/255f,123/255);
+        lt.color = new Color(255 / 255f, 255 / 255f, 255 / 255f, 123 / 255);
         lightPanel.SetActive(false);
         touchThreshold = 120;
     }
-    
 }
