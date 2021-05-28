@@ -11,7 +11,7 @@ public class sizeInit : MonoBehaviour
     void Start()
     {
         //*** 사이징 체크 ***//
-        resizing(new Vector3(1.8f, 0.3f, 0.3f));
+        resizing(new Vector3(0.5f, 0.3f, 0.3f));
     }
 
     // Update is called once per frame

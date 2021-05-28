@@ -8,11 +8,10 @@ public class AssetBundleLoader : MonoBehaviour
 {
     // Start is called before the first frame update
 
-    private string modelName = "testModel/minute";
+    private string modelName = "testModel/stoolbundle.assetbundle";
     GameObject modelObject;
     IEnumerator Start()
     {
-
         UnityWebRequest www = UnityWebRequestAssetBundle.GetAssetBundle("http://d3u3zwu9bmcdht.cloudfront.net/" + modelName);
 
         // www.downloadHandler = new DownloadHandlerBuffer();
@@ -30,7 +29,7 @@ public class AssetBundleLoader : MonoBehaviour
             {
                 Debug.Log("Asset Load Error");
             }
-            AssetBundleRequest prefab = assetFile.LoadAssetAsync("minute");
+            AssetBundleRequest prefab = assetFile.LoadAssetAsync("objChair.obj");
             yield return prefab;
             modelObject = prefab.asset as GameObject;
         }
