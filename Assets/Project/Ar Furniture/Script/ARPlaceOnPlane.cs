@@ -62,6 +62,8 @@ public class ARPlaceOnPlane : MonoBehaviour
     void Update()
     {
         sliderValue = slider.value;
+        rotateObject();
+        
         if (humanVis)
         {
             humanGirl.transform.localScale = new Vector3(sliderValue, sliderValue, sliderValue);
@@ -84,7 +86,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         }
         else if (mode == 2) // 회전
         {
-            rotateObject();
+            
         }
         else if (mode == 3) // 배치
         {
