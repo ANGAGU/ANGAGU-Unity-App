@@ -236,8 +236,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             /*** 테스트용 그림자 사이즈 ***/
             humanCheckObject.transform.localScale = new Vector3(0.3f, 0, 0.3f);
             if(modelOk) {
-                humanGirl.transform.Rotate(0,
-                0, 0, Space.World);
+                humanGirl.transform.rotation = Quaternion.Euler(0,180,0);
                 modelOk = false;
             }
             /*** 이게 원래 코드 입니다. ***/
