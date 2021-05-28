@@ -29,13 +29,15 @@ public class ARPlaceOnPlane : MonoBehaviour
     public Slider slider;
     public Button lightButton;
     public Button humanButton;
-
+    public Text log;
     private GameObject spawnObject;
     private GameObject originModel;
     private bool buttonClick = true;
     private Rigidbody myRigid;
     private Vector3 rotation;
     private Vector3 position;
+    
+    
 
     private float sliderValue;
     private int mode; // 1->이동, 2->회전, 3->배치
@@ -67,7 +69,8 @@ public class ARPlaceOnPlane : MonoBehaviour
     void Update()
     {
         sliderValue = slider.value;
-        rotateObject();
+        if(placeObject) rotateObject();
+        log.text = mode.ToString();
         
         if (humanVis)
         {
@@ -87,7 +90,8 @@ public class ARPlaceOnPlane : MonoBehaviour
 
         if (mode == 1) // 가구 모델 이동
         {
-            UpdateCenterObject();
+            if (placeObject) UpdateCenterObject();
+            else log.text = "no object";
         }
         else if (mode == 2) // 마네킹 이동
         {
@@ -99,12 +103,12 @@ public class ARPlaceOnPlane : MonoBehaviour
             placeObject.transform.position = checkObject.transform.position;
             checkObject.SetActive(false);
         }
-        else if (mode == 5)
+        else if (mode == 5) // 마네킹 모델 배치
         {
+            mode = 1;
             humanGirl.transform.position = humanCheckObject.transform.position;
             humanCheckObject.SetActive(false);
         }
-        
     }
     private void placeObjectByTouch()
     {
@@ -196,16 +200,6 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Pose placementPose = hits.Last().pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
-            
-            if (modelOk)
-            {
-                humanGirl.SetActive(true);
-                humanGirl.transform.SetPositionAndRotation(placementPose.position, placementPose.rotation);
-                humanGirl.transform.Rotate(0,
-                    -180, 0, Space.World);
-                modelOk = false;
-                humanVis = true;
-            }
             placeObject.SetActive(true);
             checkObject.SetActive(true);
             placeObject.transform.position = position;
@@ -221,7 +215,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         else // 인식되는 평면이 없는 경우
         {
             checkObject.SetActive(false);
-            placeObject.SetActive(false);
+            if(placeObject) placeObject.SetActive(false);
         }
     }
     
@@ -239,7 +233,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             humanGirl.SetActive(true);
             humanCheckObject.SetActive(true);
             humanGirl.transform.position = position;
-
+            humanVis = true;
             /*** 테스트용 그림자 사이즈 ***/
             humanCheckObject.transform.localScale = new Vector3(0.3f, 0, 0.3f);
             /*** 이게 원래 코드 입니다. ***/
@@ -264,12 +258,24 @@ public class ARPlaceOnPlane : MonoBehaviour
             slider.gameObject.SetActive(true);
             humanButton.gameObject.SetActive(true);
         }
-        else
+        else if (mode == 2)
+        {
+            mode = 5;
+            lightButton.gameObject.SetActive(true);
+            slider.gameObject.SetActive(true);
+        }
+        else if(mode == 4)
         {
             mode = 1; // 다시 되돌아 간다.
             lightButton.gameObject.SetActive(false);
             slider.gameObject.SetActive(false);
             humanButton.gameObject.SetActive(false);
+        }
+        else if (mode == 6)
+        {
+            mode = 2; // 다시 되돌아간다.
+            lightButton.gameObject.SetActive(false);
+            slider.gameObject.SetActive(false);
         }
     }
   
@@ -278,11 +284,14 @@ public class ARPlaceOnPlane : MonoBehaviour
         if (humanVis)
         {
             humanGirl.SetActive(false);
+            humanCheckObject.SetActive(false);
             humanVis = false;
+            mode = 1;
         }
         else
         {
             humanGirl.SetActive(true);
+            humanCheckObject.SetActive(true);
             humanVis = true;
             modelOk = true;
             mode = 2;
