@@ -24,6 +24,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject heightText;
     public GameObject directionLight;
     public GameObject lightPanel;
+    public Slider slider;
 
     private GameObject spawnObject;
     private GameObject originModel;
@@ -46,7 +47,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     private int touchThreshold = 120;
     private void Start()
     {
-        sliderValue = 0;
+        sliderValue = slider.value;
         arPlaneManager.planesChanged += OnPlaneChanged;
         rotation = new Vector3(0, 0, 0);
         modelHeight.SetActive(false);
@@ -60,6 +61,13 @@ public class ARPlaceOnPlane : MonoBehaviour
     }
     void Update()
     {
+        sliderValue = slider.value;
+        rotateObject();
+        
+        if (humanVis)
+        {
+            humanGirl.transform.localScale = new Vector3(sliderValue, sliderValue, sliderValue);
+        }
         if (!placeObject)
         {
             Debug.Log("!!!");
@@ -78,7 +86,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         }
         else if (mode == 2) // 회전
         {
-            rotateObject();
+            
         }
         else if (mode == 3) // 배치
         {
@@ -177,7 +185,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         {
             Pose placementPose = hits.Last().pose;
             position = placementPose.position + new Vector3(0, 0.4f, 0);
-
+            
             if (modelOk)
             {
                 humanGirl.SetActive(true);
