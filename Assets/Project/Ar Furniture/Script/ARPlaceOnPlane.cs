@@ -90,8 +90,7 @@ public class ARPlaceOnPlane : MonoBehaviour
 
         if (mode == 1) // 가구 모델 이동
         {
-            if (placeObject) UpdateCenterObject();
-            else log.text = "no object";
+            UpdateCenterObject();
         }
         else if (mode == 2) // 마네킹 이동
         {
@@ -105,7 +104,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         }
         else if (mode == 5) // 마네킹 모델 배치
         {
-            mode = 1;
+            mode = 4;
             humanGirl.transform.position = humanCheckObject.transform.position;
             humanCheckObject.SetActive(false);
         }
@@ -236,6 +235,11 @@ public class ARPlaceOnPlane : MonoBehaviour
             humanVis = true;
             /*** 테스트용 그림자 사이즈 ***/
             humanCheckObject.transform.localScale = new Vector3(0.3f, 0, 0.3f);
+            if(modelOk) {
+                humanGirl.transform.Rotate(0,
+                0, 0, Space.World);
+                modelOk = false;
+            }
             /*** 이게 원래 코드 입니다. ***/
             //checkObject.transform.localScale = new Vector3(originModel.transform.position.x, 0, originModel.transform.position.z);
 
@@ -286,7 +290,6 @@ public class ARPlaceOnPlane : MonoBehaviour
             humanGirl.SetActive(false);
             humanCheckObject.SetActive(false);
             humanVis = false;
-            mode = 1;
         }
         else
         {
