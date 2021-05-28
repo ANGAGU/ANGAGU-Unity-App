@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.UIElements;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using Button = UnityEngine.UI.Button;
 using Slider = UnityEngine.UI.Slider;
 
 public class ARPlaceOnPlane : MonoBehaviour
@@ -16,6 +17,7 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject placeObject;
     public Text tx;
     public GameObject checkObject;
+    public GameObject humanCheckObject;
     public GameObject modelHeight;
     public GameObject modelWidth;
     public GameObject modelDepth;
@@ -25,6 +27,8 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject directionLight;
     public GameObject lightPanel;
     public Slider slider;
+    public Button lightButton;
+    public Button humanButton;
 
     private GameObject spawnObject;
     private GameObject originModel;
@@ -50,6 +54,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         sliderValue = slider.value;
         arPlaneManager.planesChanged += OnPlaneChanged;
         rotation = new Vector3(0, 0, 0);
+        //lightButton.gameObject.SetActive(false);
         modelHeight.SetActive(false);
         modelWidth.SetActive(false);
         modelDepth.SetActive(false);
@@ -80,20 +85,26 @@ public class ARPlaceOnPlane : MonoBehaviour
             getRealSize = false;
         }
 
-        if (mode == 1) // 이동 및 초기화
+        if (mode == 1) // 가구 모델 이동
         {
             UpdateCenterObject();
         }
-        else if (mode == 2) // 회전
+        else if (mode == 2) // 마네킹 이동
         {
-            
+            UpdateCenterHuman();
         }
-        else if (mode == 3) // 배치
+        else if (mode == 3) // 가구 모델 배치
         {
             mode = 4;
             placeObject.transform.position = checkObject.transform.position;
             checkObject.SetActive(false);
         }
+        else if (mode == 5)
+        {
+            humanGirl.transform.position = humanCheckObject.transform.position;
+            humanCheckObject.SetActive(false);
+        }
+        
     }
     private void placeObjectByTouch()
     {
@@ -213,20 +224,55 @@ public class ARPlaceOnPlane : MonoBehaviour
             placeObject.SetActive(false);
         }
     }
-    public void buttonToPosition() // 이동
+    
+    private void UpdateCenterHuman()
     {
-        mode = 1;
+        Vector3 screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
+        List<ARRaycastHit> hits = new List<ARRaycastHit>();
+        arRaycaster.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon);
+
+        if (hits.Count > 0) // 인식되는 평면이 있는 경우
+        {
+            Pose placementPose = hits.Last().pose;
+            position = placementPose.position + new Vector3(0, 0.4f, 0);
+            
+            humanGirl.SetActive(true);
+            humanCheckObject.SetActive(true);
+            humanGirl.transform.position = position;
+
+            /*** 테스트용 그림자 사이즈 ***/
+            humanCheckObject.transform.localScale = new Vector3(0.3f, 0, 0.3f);
+            /*** 이게 원래 코드 입니다. ***/
+            //checkObject.transform.localScale = new Vector3(originModel.transform.position.x, 0, originModel.transform.position.z);
+
+            // checkObject.transform.SetPositionAndRotation(placementPose.position, Quaternion.Euler(new Vector3(0, 0, 0)));
+            humanCheckObject.transform.position = placementPose.position;
+        }
+        else // 인식되는 평면이 없는 경우
+        {
+            humanCheckObject.SetActive(false);
+            humanGirl.SetActive(false);
+        }
     }
-    public void buttonToRotate() // 회전
-    {
-        mode = 2;
-    }
+    
     public void buttonToBatch() // 배치
     {
-        mode = 3;
-        // 회전 또는 터치일 때 배치 누르면 mode 4로
+        if (mode == 1)
+        {
+            mode = 3; // 배치 한다.
+            lightButton.gameObject.SetActive(true);
+            slider.gameObject.SetActive(true);
+            humanButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            mode = 1; // 다시 되돌아 간다.
+            lightButton.gameObject.SetActive(false);
+            slider.gameObject.SetActive(false);
+            humanButton.gameObject.SetActive(false);
+        }
     }
-
+  
     public void toggleHuman()
     {
         if (humanVis)
@@ -239,6 +285,7 @@ public class ARPlaceOnPlane : MonoBehaviour
             humanGirl.SetActive(true);
             humanVis = true;
             modelOk = true;
+            mode = 2;
         }
     }
 
