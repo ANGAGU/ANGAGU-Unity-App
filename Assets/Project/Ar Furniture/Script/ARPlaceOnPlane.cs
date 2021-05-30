@@ -23,13 +23,13 @@ public class ARPlaceOnPlane : MonoBehaviour
     public GameObject modelDepth;
     public GameObject humanGirl;
     public GameObject humanBoy;
-    public GameObject heightText;
     public GameObject directionLight;
     public GameObject lightPanel;
     public Slider slider;
     public Button lightButton;
     public Button humanButton;
     public Text log;
+    public Text humanHeight;
     private GameObject spawnObject;
     private GameObject originModel;
     private bool buttonClick = true;
@@ -62,7 +62,6 @@ public class ARPlaceOnPlane : MonoBehaviour
         modelDepth.SetActive(false);
         humanBoy.SetActive(false);
         humanGirl.SetActive(false);
-        heightText.SetActive(false);
         lightPanel.SetActive(false);
         mode = 1;
     }
@@ -74,6 +73,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         
         if (humanVis)
         {
+            humanHeight.text = (160 * sliderValue).ToString() + " cm";
             humanGirl.transform.localScale = new Vector3(sliderValue, sliderValue, sliderValue);
         }
         if (!placeObject)
