@@ -74,7 +74,7 @@ public class ARPlaceOnPlane : MonoBehaviour
         if (humanVis)
         {
             humanHeight.text = (160 * sliderValue).ToString() + " cm";
-            humanGirl.transform.localScale = new Vector3(sliderValue, sliderValue, sliderValue);
+            humanGirl.transform.localScale = new Vector3(1.316f * sliderValue, 1.316f * sliderValue, 1.316f * sliderValue);
         }
         if (!placeObject)
         {
