@@ -45,8 +45,12 @@
 ---
 <br>
 
-<div style="text-align:center"><img width="200px" src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/f061f10d-7586-4a27-ae3a-c1da2b383b66/unityapp.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210605%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210605T170248Z&X-Amz-Expires=86400&X-Amz-Signature=1ec6c205791bfa6678f72e17350aeaceaa84ce88a210ff19982a39334a96d60d&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22unityapp.gif%22" />
-</div>
+
+<p align="center">
+  <img width="260" alt="캡처" src="https://user-images.githubusercontent.com/55892515/120900799-e590ac80-c671-11eb-8b41-69af674c3a4c.gif">
+  <img width="260" alt="캡처" src="https://user-images.githubusercontent.com/55892515/120900781-cabe3800-c671-11eb-9e1f-5d5fd4a793ef.gif">
+</p>
+
 <br>
 
 <br>
