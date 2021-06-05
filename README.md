@@ -35,9 +35,8 @@
 ## 2. Screenshots
 
 ---
-<p align="center">
-  <img width="260" alt="캡처" src="https://s3.us-west-2.amazonaws.com/secure.notion-static.com/f061f10d-7586-4a27-ae3a-c1da2b383b66/unityapp.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210605%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210605T165348Z&X-Amz-Expires=86400&X-Amz-Signature=18d41f6fdb75a1ee4522cd8a56c4e941390cf5cfe121e148c7bc29b8a1ab7c40&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22unityapp.gif%22">
-</p>
+![https://s3.us-west-2.amazonaws.com/secure.notion-static.com/f061f10d-7586-4a27-ae3a-c1da2b383b66/unityapp.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210605%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210605T165543Z&X-Amz-Expires=86400&X-Amz-Signature=42d20b55a453854a5fc34bab2ddb2ac6c72ce56810e2988778be445f7d2457cb&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22unityapp.gif%22](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/f061f10d-7586-4a27-ae3a-c1da2b383b66/unityapp.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAT73L2G45O3KS52Y5%2F20210605%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20210605T165543Z&X-Amz-Expires=86400&X-Amz-Signature=42d20b55a453854a5fc34bab2ddb2ac6c72ce56810e2988778be445f7d2457cb&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22unityapp.gif%22)
+
 ## 3. Tech
 
 ---
