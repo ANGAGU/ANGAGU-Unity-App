@@ -53,7 +53,9 @@
 안가구 AR 환경에 3D model을 배치하기 위한 바닥 영역 인식 기능은 AR Foundation의 AR plane detection과 AR Raycast를 이용하여 구현해주었습니다. AR plane detection은 COM 프로세스를 통하여 카메라 영상으로 부터 추출된 특징점들로 클러스터를 구성합니다. 수평 또는 수직의 평면을 감지해 주어 앞서 말한 좌표계를 구성하되, 초기 상태에서 인식되는 평면의 크기가 작아, 오히려 바닥 인식의 정확도가 낮아지는 문제가 있었습니다. 따라서 AR Raycast 과정에서 Threshold로 특정 크기 이하의 평면을 필터링을 해주어 바닥 인식의 정확도를 높여주었습니다.
 
 <br>
-
+<p align="center">
+  <img alt="capture" src="https://user-images.githubusercontent.com/55892515/120933273-513b4e00-c734-11eb-97c5-c560b3d258dc.gif">
+</p>
 
 <br>
 
@@ -67,12 +69,10 @@
   <img width="260" alt="캡처" src="https://user-images.githubusercontent.com/55892515/120900781-cabe3800-c671-11eb-9e1f-5d5fd4a793ef.gif">
 </p>
 
-<br>
 
 ## 4. 개발 환경
 
 ---
-
 ```bash
  - Unity : 2020.3.6.f1
  - AR Foundation : Version 4.1.7
